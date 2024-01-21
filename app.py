@@ -235,6 +235,41 @@ def profile():
 
     return render_template("users/edit.html", form=form, user_id=user.id)
 
+@app.route("/users/<int:user_id>/likes")
+def show_like(user_id):
+    """Show Likes"""
+
+    if not g.user:
+        flash("Access denied.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+
+    return render_template("users/likes.html", user=user, likes=user.likes)
+
+
+
+@app.route("/messages/<int:message_id>/like", methods=["POST"])
+def add_like(message_id):
+    """Show a liked message"""
+
+    if not g.user:
+        flash("Access denied.", "danger")
+        return redirect("/")
+
+    liked_message = Message.query.get_or_404(message_id)
+    
+    user_likes = g.user.likes
+
+    if liked_message in user_likes:
+        g.user.likes = [like for like in user_likes if like != liked_message]
+    else:
+        g.user.likes.append(liked_message)
+
+    db.session.commit()
+
+    return redirect("/")
+
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
